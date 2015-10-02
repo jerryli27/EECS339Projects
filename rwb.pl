@@ -517,7 +517,34 @@ if ($action eq "near") {
 
 
 if ($action eq "invite-user") { 
-  print h2("Invite User Functionality Is Unimplemented");
+  # print h2("Invite User Functionality Is Unimplemented");
+
+  if (!UserCan($user,"invite-users")) { 
+    print h2('You do not have the required permissions to invite users.');
+  } else {
+    if (!$run) { 
+      print start_form(-name=>'InviteUser'),
+  h2('Invite User'),
+    "Email: ", textfield(-name=>'email'),
+        p,
+          hidden(-name=>'run',-default=>['1']),
+      hidden(-name=>'invite',-default=>['invite-user']),
+        submit,
+          end_form,
+            hr;
+    } else {
+      my $email=param('email');
+      h2('yay')
+  #     my $error;
+  #     $error=UserAdd($name,$password,$email,$user);
+  #     if ($error) { 
+  # print "Can't add user because: $error";
+  #     } else {
+  # print "Added user $name $email as referred by $user\n";
+  #     }
+    }
+  }
+  print "<p><a href=\"rwb.pl?act=base&run=1\">Return</a></p>";
 }
 
 if ($action eq "give-opinion-data") { 
