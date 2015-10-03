@@ -354,7 +354,7 @@ if ($action eq "base") {
   my (@str,$error) = Cycles();
     if (!$error) {
       my $out;
-      $out="<select id=\"cycleDropdown\" onchange=\"ViewShift()\">";
+      $out="<select name=\"cycleDropdownList[]\"  id=\"cycleDropdown\" multiple=\"multiple\">";
       # $out.=join("",map {defined($_) ? "<option value=$_>$_</option>" : "<option value=null>null</option>"} @str);
       #$out.= join("",map {"<tr>$_</tr>"} (map {join("",map {defined($_) ? "<td>$_</td>" : "<td>(null)</td>"} @{$_})} @str)); wrong
       #$out.= join("",map {"<tr>$_</tr>"} (map {join("",map {defined($_) ? "<td>$_</td>" : "<td>(null)</td>"} $_)} @str));
@@ -369,16 +369,10 @@ if ($action eq "base") {
         #$out.= join("\t", map { defined($_) ? $_ : "(null)" } @{$r});
         
       }
+      $out.="<input type=\"button\" value=\"submit\" onclick=\"ViewShift()\">";
       $out.="</select>";
       print $out;
     }
-  # Just test to see if the output is formatted correctly. Next step is loop through the output and put it in the drop-down list.
-  print "<select>";
-  print "<option value=\"volvo\">Volvo</option>";
-  print "<option value=\"saab\">Saab</option>";
-  print "<option value=\"mercedes\">Mercedes</option>";
-  print "<option value=\"audi\">Audi</option>";
-  print "</select>";
 
   print "<form name=\"checkboxForm\" style=\"font-size: 150%\" action = \"#\">";
   print "<input type=\"checkbox\" name=\"committeesCheckbox\" value=\"Committees\" onClick=\"ViewShift()\">Committees<br>";
@@ -471,7 +465,11 @@ if ($action eq "near") {
   } else {
     map {$what{$_}=1} split(/\s*,\s*/,$whatparam);
   }
-	       
+
+  # Generate the sql query string for cycles.
+  $cycle='(cycle='.$cycle .')';
+  $cycle=~ s/\,/ or cycle=/g;
+	    
 
   if ($what{committees}) { 
     my ($str,$error) = Committees($latne,$longne,$latsw,$longsw,$cycle,$format);
@@ -756,7 +754,8 @@ sub Committees {
   my ($latne,$longne,$latsw,$longsw,$cycle,$format) = @_;
   my @rows;
   eval { 
-    @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, cmte_nm, cmte_pty_affiliation, cmte_st1, cmte_st2, cmte_city, cmte_st, cmte_zip from cs339.committee_master natural join cs339.cmte_id_to_geo where cycle=? and latitude>? and latitude<? and longitude>? and longitude<?",undef,$cycle,$latsw,$latne,$longsw,$longne);
+    # Changed where cycle=? and latitude>? to where ".$cycle." and latitude>? because now we have to select multiple cycles. ? can only be behind an operator(like =, !=,<>)
+    @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, cmte_nm, cmte_pty_affiliation, cmte_st1, cmte_st2, cmte_city, cmte_st, cmte_zip from cs339.committee_master natural join cs339.cmte_id_to_geo where ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
   };
   
   if ($@) { 
@@ -782,7 +781,8 @@ sub Candidates {
   my ($latne,$longne,$latsw,$longsw,$cycle,$format) = @_;
   my @rows;
   eval { 
-    @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, cand_name, cand_pty_affiliation, cand_st1, cand_st2, cand_city, cand_st, cand_zip from cs339.candidate_master natural join cs339.cand_id_to_geo where cycle=? and latitude>? and latitude<? and longitude>? and longitude<?",undef,$cycle,$latsw,$latne,$longsw,$longne);
+    # Changed where cycle=? and latitude>? to where ".$cycle." and latitude>? because now we have to select multiple cycles. ? can only be behind an operator(like =, !=,<>)
+    @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, cand_name, cand_pty_affiliation, cand_st1, cand_st2, cand_city, cand_st, cand_zip from cs339.candidate_master natural join cs339.cand_id_to_geo where ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
   };
   
   if ($@) { 
@@ -811,7 +811,8 @@ sub Individuals {
   my ($latne,$longne,$latsw,$longsw,$cycle,$format) = @_;
   my @rows;
   eval { 
-    @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, name, city, state, zip_code, employer, transaction_amnt from cs339.individual natural join cs339.ind_to_geo where cycle=? and latitude>? and latitude<? and longitude>? and longitude<?",undef,$cycle,$latsw,$latne,$longsw,$longne);
+    # Changed where cycle=? and latitude>? to where ".$cycle." and latitude>? because now we have to select multiple cycles. ? can only be behind an operator(like =, !=,<>)
+    @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, name, city, state, zip_code, employer, transaction_amnt from cs339.individual natural join cs339.ind_to_geo where ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
   };
   
   if ($@) { 

@@ -148,11 +148,22 @@ ViewShift = function() {
 		ne = bounds.getNorthEast(),
 		sw = bounds.getSouthWest();
 
-
+	var cycleVal="";//Stores string for election cycle
 	var e = document.getElementById("cycleDropdown");
-	var cycleVal = e.options[e.selectedIndex].value;
-	if (cycleVal==null){
-		cycleVal="1112";
+
+	for (var i = 0; i < e.options.length; i++) {
+	   if(e.options[i].selected ==true){
+	   		if (cycleVal!=""){
+            	cycleVal = cycleVal.concat(",");
+            }
+	        cycleVal =cycleVal.concat(e.options[i].value);
+	    }
+	}
+
+	if (cycleVal==null || cycleVal==""){
+		//cycleVal="1112";
+		ClearMarkers();
+		return;
 	}
 
 	// Check which checkbox is checked.
@@ -207,6 +218,9 @@ ViewShift = function() {
 			what:	checkedText,
 			cycle:  cycleVal
 		}, NewData);
+	}else{
+		ClearMarkers();
+		return;
 	}
 },
 
