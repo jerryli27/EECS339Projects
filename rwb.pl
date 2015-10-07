@@ -518,24 +518,37 @@ if ($action eq "near") {
 	print $str;
       }
     }
+  }
 
 #********** PART 3 attempt **********#
   my @rows_time_rep_cand;
   my @rows_time_rep_comm;
-  my @rep;
+  my @rows_time_dem_cand;
+  my @rows_time_dem_comm;
 
-  my $counting;
+  my @rep;
+  my @dem;
+
+  my $count;
 
   eval{
     @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
   }; 
-   eval{
+  eval{
     @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
   }; 
-  
-  $counting = @{$rows_time_rep_cand}[0] + @{$rows_time_rep_comm}[0];
 
-  if ($counting<30)
+  eval { 
+   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+  };
+
+  eval { 
+   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+  };  
+  
+  $count = @{$rows_time_rep_cand}[0][0] + @{$rows_time_rep_comm}[0][0] + @{$rows_time_dem_comm}[0][0]+@{$rows_time_dem_cand}[0][0];
+
+  if ($count<30)
   ##30??
   {
     $latne+=0.1;
@@ -549,11 +562,38 @@ if ($action eq "near") {
      @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
     }; 
 
-    #TBC
-    #count rep and dem, give data to summary table variable
-    #if rep>dem RED, otherwise BLU
+    eval { 
+   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+  };
+
+    eval { 
+   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+  };  
+
+  my $dem=@{$rows_time_dem_cand}[0][0] +@{$rows_time_dem_comm}[0][0];
+  my $rep=@{$rows_time_rep_comm}[0][0]+ @{$rows_time_rep_cand}[0][0];
+
+  if ($dem>$rep)
+  {
+    my $color='blue';
+    my $id='result'
+    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
+    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+  }
+  if ($rep>$dem)
+  {
+    my $color='red';
+    my $id='result'
+    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
+    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+  }
 
   }
+  
+  
+  
+  
+
 
 # Repeat above for Individuals and opinions
 
