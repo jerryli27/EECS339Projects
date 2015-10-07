@@ -489,6 +489,35 @@ if ($action eq "near") {
       }
     }
   }
+  if ($what{candidates}) {
+    my ($str,$error) = Candidates($latne,$longne,$latsw,$longsw,$cycle,$format);
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby candidates</h2>$str";
+      } else {
+	print $str;
+      }
+    }
+  }
+  if ($what{individuals}) {
+    my ($str,$error) = Individuals($latne,$longne,$latsw,$longsw,$cycle,$format);
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby individuals</h2>$str";
+      } else {
+	print $str;
+      }
+    }
+  }
+  if ($what{opinions}) {
+    my ($str,$error) = Opinions($latne,$longne,$latsw,$longsw,$cycle,$format);
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby opinions</h2>$str";
+      } else {
+	print $str;
+      }
+    }
 
 #********** PART 3 attempt **********#
   my @rows_time_rep_cand;
