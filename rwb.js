@@ -121,7 +121,20 @@ UpdateMap = function() {
 		color.css("background-color", "red");
 	}
 
-},
+	//Part 3 coloring
+   $('#summary-committee').css('background-color',$('#committee_contribution').attr('color'));
+      // $('#summary-individual').css('background-color',$('#Individual_contribution').attr('color'));
+   // $('#summary-opinion').css('background-color',$('#selected_opinions').attr('color'));
+   // $('#summary-committee').html($('#committee_contribution').html());
+      // $('#summary-individual').html($('#Individual_contribution').html());
+   // $('#summary-opinion').html($('#selected_opinions').html());
+   
+   // $('#vote').html($('#winner').html());
+   // $('#summary-data-committee_1').css('background-color',$('#committee_data_contribution_1').attr('color'));
+   // $('#summary-data-committee_1').html($('#committee_data_contribution_1').html());
+   // $('#summary-data-committee_2').css('background-color',$('#committee_data_contribution_2').attr('color'));
+   // $('#summary-data-committee_2').html($('#committee_data_contribution_2').html());
+}
 
 //
 // NewData is called by the browser after any request
