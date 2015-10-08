@@ -532,18 +532,18 @@ if ($action eq "near") {
   my $count;
 
   eval{
-    @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
+    @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
   }; 
   eval{
-    @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
+    @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
   }; 
 
   eval { 
-   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
   };
 
   eval { 
-   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
   };  
   
   $count = @{$rows_time_rep_cand}[0][0] + @{$rows_time_rep_comm}[0][0] + @{$rows_time_dem_comm}[0][0]+@{$rows_time_dem_cand}[0][0];
@@ -556,18 +556,18 @@ if ($action eq "near") {
     $longne+=0.1;
     $longsw-=0.1;
     eval{
-      @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
+      @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
     };
     eval { 
-     @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
+     @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
     }; 
 
     eval { 
-   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
   };
 
     eval { 
-   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  cycle in ($cycle) and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
   };  
 
   my $dem=@{$rows_time_dem_cand}[0][0] +@{$rows_time_dem_comm}[0][0];
