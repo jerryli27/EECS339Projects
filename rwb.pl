@@ -479,57 +479,19 @@ if ($action eq "near") {
   $cycle=~ s/\,/ or cycle=/g;
 	    
 
-  if ($what{committees}) { 
+  if ($what{committees}) 
+  { 
     my ($str,$error) = Committees($latne,$longne,$latsw,$longsw,$cycle,$format);
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby committees</h2>$str";
-      } else {
-	print $str;
-      }
-    }
-  }
-  if ($what{candidates}) {
-    my ($str,$error) = Candidates($latne,$longne,$latsw,$longsw,$cycle,$format);
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby candidates</h2>$str";
-      } else {
-	print $str;
-      }
-    }
-  }
-  if ($what{individuals}) {
-    my ($str,$error) = Individuals($latne,$longne,$latsw,$longsw,$cycle,$format);
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby individuals</h2>$str";
-      } else {
-	print $str;
-      }
-    }
-  }
-  if ($what{opinions}) {
-    my ($str,$error) = Opinions($latne,$longne,$latsw,$longsw,$cycle,$format);
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby opinions</h2>$str";
-      } else {
-	print $str;
-      }
-    }
-  }
 
-#********** PART 3 attempt **********#
-  my @rows_time_rep_cand;
-  my @rows_time_rep_comm;
-  my @rows_time_dem_cand;
-  my @rows_time_dem_comm;
+    my @rows_time_rep_cand;
+  	my @rows_time_rep_comm;
+  	my @rows_time_dem_cand;
+  	my @rows_time_dem_comm;
 
-  my @rep;
-  my @dem;
+  	my @rep;
+  	my @dem;
 
-  my $count;
+	my $count;
 
   eval{
     @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.comm_to_cand natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
@@ -548,8 +510,7 @@ if ($action eq "near") {
   
   $count = @{$rows_time_rep_cand}[0][0] + @{$rows_time_rep_comm}[0][0] + @{$rows_time_dem_comm}[0][0]+@{$rows_time_dem_cand}[0][0];
 
-  if ($count<30)
-  ##30??
+  if ($count<5)
   {
     $latne+=0.1;
     $latsw-=0.1;
@@ -569,7 +530,7 @@ if ($action eq "near") {
     eval { 
    @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt), max(transaction_amnt),min(transaction_amnt),avg(transaction_amnt) from (cs339.comm_to_comm natural join cs339.cmte_id_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and cmte_id in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
   };  
-
+}
   my $dem=@{$rows_time_dem_cand}[0][0] +@{$rows_time_dem_comm}[0][0];
   my $rep=@{$rows_time_rep_comm}[0][0]+ @{$rows_time_rep_cand}[0][0];
 
@@ -579,25 +540,128 @@ if ($action eq "near") {
     my $id='result'
     my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
     print "<div id='$id' color='$color' style='display:none;'>$text</div>";
-  }
+}
+
   if ($rep>$dem)
   {
     my $color='red';
     my $id='result'
     my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
     print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+}  
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby committees</h2>$str";
+      } else {
+	print $str;
+      }
+  }
+}
+
+  if ($what{candidates}) {
+    my ($str,$error) = Candidates($latne,$longne,$latsw,$longsw,$cycle,$format);
+    
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby candidates</h2>$str";
+      } else {
+	print $str;
+      }
+    }
+  }
+  if ($what{individuals}) {
+    my ($str,$error) = Individuals($latne,$longne,$latsw,$longsw,$cycle,$format);
+
+    my @rows_time_rep;
+    my @rows_time_dem;
+    my @dem;
+    my @rep;
+    my @count;
+
+    eval{
+    	@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.individual natural join cs339.ind_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and CMTE_ID in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+    }
+    eval { 
+    	@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt)from (cs339.individual natural join cs339.ind_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and CMTE_ID in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
+    }
+    $count=@{$rows_time_rep}[0][0] + @{$rows_time_dem}[0][0]
+    if ($count<5){
+    	$latne+=0.1;
+    	$latsw-=0.1;
+    	$longne+=0.1;
+    	$longsw-=0.1;
+    	eval { 
+    	@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt)from (cs339.individual natural join cs339.ind_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and CMTE_ID in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Rep' or cmte_pty_affiliation='REP')",undef,$latsw,$latne,$longsw,$longne);
+    }
+    eval{
+    	@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),sum(transaction_amnt) from (cs339.individual natural join cs339.ind_to_geo)  where  ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<? and CMTE_ID in (select cmte_id from cs339.committee_master where cmte_pty_affiliation='Dem' or cmte_pty_affiliation='DEM')",undef,$latsw,$latne,$longsw,$longne);
+    }
+}
+
+  my $dem=@{$rows_time_dem}[0][1]
+  my $rep=@{$rows_time_rep}[0][1]
+
+  if ($dem>$rep)
+  {
+    my $color='blue';
+    my $id='result_ind'
+    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
+    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+}
+
+  if ($rep>$dem)
+  {
+    my $color='red';
+    my $id='result_ind'
+    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
+    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+}  
+
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby individuals</h2>$str";
+      } else {
+	print $str;
+      }
+    }
+  }
+  if ($what{opinions}) {
+    my ($str,$error) = Opinions($latne,$longne,$latsw,$longsw,$cycle,$format);
+
+     my @rows;
+
+    eval {
+      @rows = ExecSQL($dbuser, $dbpasswd, "select avg(color), count(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?","COL",$latsw,$latne,$longsw,$longne);
+    };
+
+    my $coloravg=$rows[0];
+
+    if($rows[0]>0)
+        {
+        my $color='red';
+        my $id='selected_opinions';
+        my $text = "<span>Average is: $coloravg\$ </span>";
+        print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+        }
+    if($rowcount<0)
+        {
+        my $color='blue';
+        my $id='selected_opinions';
+        my $text = "<span>Average is: $coloravg\$ </span>";
+        print "<div id='$id' color='$color' style='display:none;'>$text</div>";
+         }
+         
+    if (!$error) {
+      if ($format eq "table") { 
+	print "<h2>Nearby opinions</h2>$str";
+      } else {
+	print $str;
+      }
+    }
   }
 
-  }
-  
-  
-  
-  
 
 
-# Repeat above for Individuals and opinions
-
-#**** END of PART 3 ****#
 
 if ($action eq "invite-user") { 
   # print h2("Invite User Functionality Is Unimplemented");
