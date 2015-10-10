@@ -375,7 +375,8 @@ if ($action eq "base") {
   print "<form name=\"checkboxForm\" style=\"font-size: 150%\" action = \"#\">";
   print "<input type=\"checkbox\" name=\"committeesCheckbox\" value=\"Committees\" onClick=\"ViewShift()\">Committees<br>";
   print "<input type=\"checkbox\" name=\"candidatesCheckbox\" value=\"Candidates\" onClick=\"ViewShift()\">Candidates<br>";
-  print "<input type=\"checkbox\" name=\"individualsCheckbox\" value=\"Individuals\" onClick=\"ViewShift()\">Individuals";
+  print "<input type=\"checkbox\" name=\"individualsCheckbox\" value=\"Individuals\" onClick=\"ViewShift()\">Individuals<br>"; 
+  print "<input type=\"checkbox\" name=\"opinionsCheckbox\" value=\"Opinions\" onClick=\"ViewShift()\">Opinions";
   print "</form>";
   print "<p id=\"debugText\">Hello World!</p>";
   
@@ -651,9 +652,62 @@ eval{
   }
 }
 
+#
+# REGISTER
+#
+# When new user clicked the link provided by inviter to register
+#
+if ($action eq "register"){
+  my $inviter = param("inviter");   
+  my $email = param("email");	# email is the unique key in invitation link, link expires if email has been registered
+  print h2("email: $email");
+  my @permissionList = param("permission");
+  foreach (@permissionList){
+    print h3("permission: $_");
+  }
+
+  if (EmailRegistered($email)){
+    print h2("This email has already been registered. Link expired.");
+  } else{ 
+    if (!$run) { 
+      print start_form(-name=>'AddUser'),
+        h2("Welcome to RWB! Please register"),
+        h3("You name and password entered below will be associated with the email address you received this link with"),
+	  "Name: ", textfield(-name=>'name'),
+	    p,
+		  "Password: ", textfield(-name=>'password'),
+		    p,
+		      hidden(-name=>'run',-default=>['1']),
+			hidden(-name=>'act',-default=>['login']),
+		        hidden(-name=>'email',-default=>$email),
+			  submit,
+			    end_form,
+			      hr;
+    } else {
+      my $name=param('name');
+      my $password=param('password');
+      my $email = param('email');
+      my $error;
+      $error=UserAdd($name,$password,$email,$user);
+      if ($error) { 
+	print "Can't add user because: $error";
+      } else {
+        foreach (@permissionList){
+	  my $error=GiveUserPerm($name,$_);
+          if ($error) { 
+            print "Can't add permission to user because: $error";
+	  } else{
+            print "permission given: $_\n";
+          }
+	}
+	print "You have registered. Please <a href=\"rwb.pl?act=login\">log in</a>";
+      }
+    }
+   }
+  }
 
 if ($action eq "invite-user") { 
-  # print h2("Invite User Functionality Is Unimplemented");
+  my @permissionList = ExecSQL($dbuser, $dbpasswd, "select action from rwb_permissions where name=?","COL",$user);
 
   if (!UserCan($user,"invite-users")) { 
     print h2('You do not have the required permissions to invite users.');
@@ -663,28 +717,67 @@ if ($action eq "invite-user") {
   h2('Invite User'),
     "Email: ", textfield(-name=>'email'),
         p,
-          hidden(-name=>'run',-default=>['1']),
-      hidden(-name=>'invite',-default=>['invite-user']),
+    h3('Please select the permissions for your invitee');
+    foreach (@permissionList) {
+      print checkbox(-name=>$_),p;
+    }
+      print  hidden(-name=>'run',-default=>['1']),
+      hidden(-name=>'act',-default=>['invite-user']),
         submit,
           end_form,
             hr;
     } else {
       my $email=param('email');
-      h2('yay')
-  #     my $error;
-  #     $error=UserAdd($name,$password,$email,$user);
-  #     if ($error) { 
-  # print "Can't add user because: $error";
-  #     } else {
-  # print "Added user $name $email as referred by $user\n";
-  #     }
+      my $link="http://murphy.wot.eecs.northwestern.edu/~yfo776/rwb/rwb.pl?act=register&inviter=$user&email=$email";
+      foreach (@permissionList){
+        if (param($_) eq 'on') {
+          $link="$link&permission=$_";
+        }
+      }
+      $link = substr $link,0,-1;
+      print h3("An invitational email has been sent to $email");
+      open(MAIL, "| mail -s \"rwb test\" $email");
+      print MAIL "You have been invited by $user to register for RWB. Please use the following link to register: $link";
+      close(MAIL);
     }
   }
   print "<p><a href=\"rwb.pl?act=base&run=1\">Return</a></p>";
 }
 
 if ($action eq "give-opinion-data") { 
-  print h2("Giving Location Opinion Data Is Unimplemented");
+  if (!UserCan($user,"give-opinion-data")) { 
+    print h2('You do not have the required permissions to give opinion.');
+  } else {
+    if (!$run) { 
+      print "<script>";
+      print "window.onload = navigator.geolocation.getCurrentPosition(function(location){var long = document.getElementById('longitude');long.value=location.coords.longitude;var lat = document.getElementById('latitude');lat.value=location.coords.latitude;})";
+      print "</script>";
+      print
+        print start_form(-name=>'give-opinion'),
+        h2('Give Your Opinion'),
+          "Color: a number from -1 to 1 ", textfield(-name=>'color'),p,
+          hidden(-name=>'latitude',-id=>'latitude'),p,
+	  hidden(-name=>'longitude',-id=>'longitude'),p,
+                      hidden(-name=>'run',-default=>['1']),
+                        hidden(-name=>'act',-default=>['add-user']),
+                          submit,
+                            end_form,
+                              hr;
+    } else {  
+      my $latitude = param("latitude");
+      my $longitude = param("longitude"); 
+      my $color=param('color');
+      my $error;
+      $error=GiveOpinion($user,$color,$latitude,$longitude);
+      if ($error) { 
+        print "Can't give opinion because: $error";
+      } else {
+        print "Thanks for your opinion!\n";
+      }
+    }
+  }
+  print "<p><a href=\"rwb.pl?act=base&run=1\">Return</a></p>";
+
 }
 
 if ($action eq "give-cs-ind-data") { 
@@ -703,7 +796,7 @@ if ($action eq "add-user") {
   if (!UserCan($user,"add-users") && !UserCan($user,"manage-users")) { 
     print h2('You do not have the required permissions to add users.');
   } else {
-    if (!$run) { 
+    if (!$run) {
       print start_form(-name=>'AddUser'),
 	h2('Add User'),
 	  "Name: ", textfield(-name=>'name'),
@@ -1185,7 +1278,31 @@ sub UserCan {
 }
 
 
+#
+# Check if the given email address already exists in the rwb_user table
+#
+sub EmailRegistered{
+  my ($email) = @_;
+  my @col;
+  eval {@col= ExecSQL($dbuser,$dbpasswd, "select count(*) from rwb_users where email=?","COL",$email);};
+  if ($@){
+    return 0;
+  } else {
+    return $col[0]>0;
+  }
+} 
 
+
+#
+## Insert opinion data into rwb_opinions
+##
+## GiveOpinion($submitter, $color, $latitude, $longitude)
+##
+sub GiveOpinion{
+  my ($submitter, $color, $latitude, $longitude) = @_;
+  eval {ExecSQL($dbuser, $dbpasswd, "insert into rwb_opinions (submitter,color,latitude,longitude) values (?,?,?,?)",undef,$submitter,$color,$latitude,$longitude);};
+  return $@;
+} 
 
 
 #
@@ -1271,14 +1388,6 @@ sub MakeRaw {
   #
   if ($type eq "ROW") { 
     #
-    # map {code} @list means "apply this code to every member of the list
-    # and return the modified list.  $_ is the current list member
-    #
-    $out.=join("\t",map { defined($_) ? $_ : "(null)" } @list);
-    $out.="\n";
-  } elsif ($type eq "COL") { 
-    #
-    # ditto for a single column
     #
     $out.=join("\n",map { defined($_) ? $_ : "(null)" } @list);
     $out.="\n";
@@ -1294,8 +1403,6 @@ sub MakeRaw {
   $out.="</pre>\n";
   return $out;
 }
-
-#
 # @list=ExecSQL($user, $password, $querystring, $type, @fill);
 #
 # Executes a SQL statement.  If $type is "ROW", returns first row in list
