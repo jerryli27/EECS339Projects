@@ -690,7 +690,7 @@ if ($action eq "register"){
   }
 
 if ($action eq "invite-user") { 
-  # print h2("Invite User Functionality Is Unimplemented");
+  my @permissionList = ExecSQL($dbuser, $dbpasswd, "select action from rwb_permissions where name=?","COL",$user);
 
   my @permissionList = ExecSQL($dbuser, $dbpasswd, "select action from rwb_permissions where name=?","COL",$user);
 
@@ -1279,6 +1279,17 @@ sub EmailRegistered{
   }
 } 
 
+
+#
+## Insert opinion data into rwb_opinions
+##
+## GiveOpinion($submitter, $color, $latitude, $longitude)
+##
+sub GiveOpinion{
+  my ($submitter, $color, $latitude, $longitude) = @_;
+  eval {ExecSQL($dbuser, $dbpasswd, "insert into rwb_opinions (submitter,color,latitude,longitude) values (?,?,?,?)",undef,$submitter,$color,$latitude,$longitude);};
+  return $@;
+} 
 
 #
 ## Insert opinion data into rwb_opinions
