@@ -110,17 +110,9 @@ UpdateMap = function() {
 	UpdateMapById("individual_data", "INDIVIDUAL");
 	UpdateMapById("opinion_data","OPINION");
 
-// When we're done with the map update, we mark the color division as
-// Ready.
 	color.html("Ready");
 
-// The hand-out code doesn't actually set the color according to the data
-// (that's the student's job), so we'll just assign it a random color for now
-	if (Math.random()>0.5) {
-		color.css("background-color", "blue");
-	} else {
-		color.css("background-color", "red");
-	}
+
 
 	$('#summary-committee').css('background-color',$('#committee-contributions').attr('color'));
 	$('#summary-candidate').css('background-color',$('#candidate-contributions').attr('color'));
@@ -131,6 +123,9 @@ UpdateMap = function() {
 	$('#summary-candidate').html($('#candidate-contributions').html());
 	$('#summary-individual').html($('#individual-contributions').html());
 	$('#summary-opinion').html($('#opinion-contributions').html());
+
+// When we're done with the map update, we print summary
+	summary();
 }
 
 //
@@ -151,6 +146,9 @@ summary = function(){
 		// Check which checkbox is checked.
 	var elLength = document.checkboxForm.elements.length;
 	var checkedText="";
+	var summaryInnerHTMLString="Summary<br>";
+	var summary = $("#summary");
+	var totalValue=0;
     for (i=0; i<elLength; i++)
     {
         var type = checkboxForm.elements[i].type;
@@ -160,41 +158,47 @@ summary = function(){
             	checkedText = checkedText.concat(",");
             }
             switch(i){
-            	case 0:
-            		checkedText = checkedText.concat("committees");
+            	case 0: //Candidates
+            		if (document.getElementById("colorC"))
+            			summaryInnerHTMLString = summaryInnerHTMLString.concat("<h1 style=\"color:"+document.getElementById("colorC").value+"\">Commities financial data:Democratic: \$ "+ document.getElementById("DemC").value + " Rebuplican: \$ " + document.getElementById("RepC").value+"<br></h1>");
             		break;
-            	case 1:
-            		checkedText = checkedText.concat("candidates");
+            	case 2: //Individuals
+            		if (document.getElementById("colorI"))
+            			summaryInnerHTMLString = summaryInnerHTMLString.concat("<h1 style=\"color:"+document.getElementById("colorI").value+"\">Individuals financial data:Democratic: \$ "+ document.getElementById("DemI").value + " Rebuplican: \$ " + document.getElementById("RepI").value+"<br></h1>");
             		break;
-            	case 2:
-            		checkedText = checkedText.concat("individuals");
-            		
+            	case 3: //Opinions
+            		if (document.getElementById("colorO"))
+            			summaryInnerHTMLString = summaryInnerHTMLString.concat("<h1 style=\"color:"+document.getElementById("colorO").value+"\">Opinions data:Average: \$ "+ document.getElementById("avg").value + " Standard Deviation: \$ " + document.getElementById("std").value+"<br></h1>");
             }
         }
     }
+    if (summaryInnerHTMLString=="Summary<br>"){
+    	summaryInnerHTMLString="Commities,Individuals, and Opinions all not selected<br>";
+    }
+    summary.html(summaryInnerHTMLString);
 
-     if checkedText="committees"{
-		color.style.backgroundColor=document.getElementByID("colorC").value;
-		color.innerHTML="Ready<br>";
-		color.innerHTML+="Democratic: $" + document.getElementById("DemC").value + "<br>";
-		color.innerHTML+="Rebuplican: $" + document.getElementById("RepC").value;
-		 } 
+  //    if (checkedText=="committees"){
+		// color.style.backgroundColor=document.getElementById("colorC").value;
+		// color.innerHTML="Ready<br>";
+		// color.innerHTML+="Democratic: $" + document.getElementById("DemC").value + "<br>";
+		// color.innerHTML+="Rebuplican: $" + document.getElementById("RepC").value;
+		// }
          
 
      
-     if checkedText="individuals"{
-		 color.style.backgroundColor=document.getElementByID("colorI").value;         
-     color.innerHTML="Ready<br>";
-     color.innerHTML+="Democratic: $" + document.getElementById("DemI").value + "<br>";
-     color.innerHTML+="Rebuplican: $" + document.getElementById("RepI").value;
-    }
+  //    if (checkedText=="individuals"){
+		//  color.style.backgroundColor=document.getElementById("colorI").value;         
+  //    color.innerHTML="Ready<br>";
+  //    color.innerHTML+="Democratic: $" + document.getElementById("DemI").value + "<br>";
+  //    color.innerHTML+="Rebuplican: $" + document.getElementById("RepI").value;
+  //   }
     
-      if checkedText="opinions"{
-		 color.style.backgroundColor=document.getElementByID("colorO").value;         
-     color.innerHTML="Ready<br>";
-     color.innerHTML+="Average: " + document.getElementById("avg").value "<br>";
-     color.innerHTML+="Standard Deviation: " + document.getElementById("std").value;
-    }
+  //     if (checkedText=="opinions"){
+		//  color.style.backgroundColor=document.getElementById("colorO").value;         
+  //    color.innerHTML="Ready<br>";
+  //    color.innerHTML+="Average: " + document.getElementById("avg").value "<br>";
+  //    color.innerHTML+="Standard Deviation: " + document.getElementById("std").value;
+  //   }
     }
 //
 // The Google Map calls us back at ViewShift when some aspect
@@ -245,6 +249,9 @@ ViewShift = function() {
             		break;
             	case 2:
             		checkedText = checkedText.concat("individuals");
+            		break;
+            	case 3:
+            		checkedText = checkedText.concat("opinions");
             		
             }
         }
@@ -279,6 +286,8 @@ ViewShift = function() {
 		}, NewData);
 	}else{
 		ClearMarkers();
+		$("#color").css("background-color","white")
+			.html("<b>No option selected...</b>");
 		return;
 	}
 	

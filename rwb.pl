@@ -382,6 +382,11 @@ if ($action eq "base") {
   
   # ***************************************************TEST**************************************************
 
+  #
+  # And a div to populate with summary
+  #
+  #
+  print "<div id=\"summary\" style=\:width:100\%; height:10\%\"></div>";
 
 
    
@@ -397,6 +402,8 @@ if ($action eq "base") {
     # invisible otherwise
     print "<div id=\"data\" style=\"display: none;\"></div>";
   }
+
+ 
 
 
 # height=1024 width=1024 id=\"info\" name=\"info\" onload=\"UpdateMap()\"></iframe>";
@@ -459,6 +466,9 @@ if ($action eq "near") {
   
   $format = "table" if !defined($format);
   $cycle = "1112" if !defined($cycle);
+  # Generate the sql query string for cycles.
+  $cycle='(cycle='.$cycle .')';
+  $cycle=~ s/\,/ or cycle=/g;
 
   if (!defined($whatparam) || $whatparam eq "all") { 
     %what = ( committees => 1, 
@@ -472,78 +482,93 @@ if ($action eq "near") {
 
   if ($what{committees}) { 
     my ($str,$error) = Committees($latne,$longne,$latsw,$longsw,$cycle,$format);
+    if (!$error) {
+      if ($format eq "table") { 
+        print "<h2>Nearby committees</h2>$str";
+      } else {
+        print $str;
+      }
+    }
     my @rows_time_rep_cand;
   	my @rows_time_rep_comm;
   	my @rows_time_dem_cand;
   	my @rows_time_dem_comm;
 
-  	my @rep;
-  	my @dem;
   	my $count;
   	my $stopper;
   	my $color='white';
 
           
-do{
-	$latne+=0.1;
-    $latsw-=0.1;
-    $longne+=0.1;
-    $longsw-=0.1;
-   	eval{
-    @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.committee_master natural join cs339.comm_to_cand natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-}; 
-	eval{
-    @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-}; 
-	eval { 
-	@rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-};
-	eval { 
-	@rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-};
-	$count = $rows_time_rep_cand[0] + $rows_time_rep_comm[0]+ $rows_time_dem_comm[0]+$rows_time_dem_cand[0];
-	$stopper++;
-	}while(($count<5)&&($stopper<20));
+    do{
+    	$latne+=0.1;
+      $latsw-=0.1;
+      $longne+=0.1;
+      $longsw-=0.1;
+     	eval{
+        @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.committee_master natural join cs339.comm_to_cand natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+      }; 
+      eval{
+        @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+      }; 
+      eval { 
+        @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+      };
+      eval { 
+        @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+      };
+    	$count = $rows_time_rep_cand[0][0] + $rows_time_rep_comm[0][0]+ $rows_time_dem_comm[0][0]+$rows_time_dem_cand[0][0];
+    	$stopper++;
+    }while(($count<5)&&($stopper<20));
 
-	my $dem=$rows_time_dem_cand[1] +$rows_time_dem_comm[1];
-	my $rep=$rows_time_rep_comm[1]+ $rows_time_rep_cand[1];
+  	my $dem=0;
+    if ($rows_time_dem_cand[0][1]){
+      $dem+=$rows_time_dem_cand[0][1];
+      }
+      if ($rows_time_dem_comm[0][1]){
+        $dem+=$rows_time_dem_comm[0][1];
+      }
+  	my $rep=0;
+    if ($rows_time_rep_comm[0][1]){
+      $rep+=$rows_time_rep_comm[0][1];
+      }
+    if ($rows_time_rep_cand[0][1]){
+      $rep+=$rows_time_rep_cand[0][1];
+      }
 
-if ($dem>$rep)
-  {
-    $color='blue';
-}
- if ($rep>$dem)
-  {
-    $color='red';
-} 
+    if ($dem>$rep)
+      {
+        $color='blue';
+      }
+     if ($rep>$dem)
+      {
+        $color='red';
+      } 
      print start_form(-id=>'myCommitteeData'),
         hidden(-id=>'DemC',-default=>[$dem]),
         hidden(-id=>'RepC',-default=>[$rep]),
         hidden(-id=>'colorC',-default=>[$color]),
           end_form, hr;
- 
-
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby committees</h2>$str";
-      } else {
-	print $str;
-      }
-    }
+    print "<h1 style=\"color:".$color."\">Commities financial data:Democratic: \$ ".$dem.". Rebuplican: \$ ".$rep."<br></h1>";
   }
   if ($what{candidates}) {
     my ($str,$error) = Candidates($latne,$longne,$latsw,$longsw,$cycle,$format);
     if (!$error) {
       if ($format eq "table") { 
-	print "<h2>Nearby candidates</h2>$str";
+        print "<h2>Nearby candidates</h2>$str";
       } else {
-	print $str;
+        print $str;
       }
     }
   }
   if ($what{individuals}) {
     my ($str,$error) = Individuals($latne,$longne,$latsw,$longsw,$cycle,$format);
-    
+    if (!$error) {
+      if ($format eq "table") { 
+        print "<h2>Nearby individuals</h2>$str";
+      } else {
+        print $str;
+      }
+    }
     my @rows_time_rep;
     my @rows_time_dem;
     my @dem;
@@ -554,45 +579,51 @@ if ($dem>$rep)
 	
 
     do{
-		eval{
-			@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-			 };
-		eval {
-			@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-			};
-		$count=$rows_time_rep[0] + $rows_time_dem[0];
-		$stopper++;
+      $latne+=0.1;
+      $latsw-=0.1;
+      $longne+=0.1;
+      $longsw-=0.1;
+  		eval{
+  			@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+  		};
+  		eval {
+  			@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+  		};
+  		$count=$rows_time_rep[0][0] + $rows_time_dem[0][0];
+  		$stopper++;
 		} while (($count<5)&&($stopper<20));
      
-     my $dem=$rows_time_dem[1];
-     my $rep=$rows_time_rep[1];
+    my $dem=$rows_time_dem[0][1];
+    my $rep=$rows_time_rep[0][1];
      
-     if ($dem>$rep){
-		 $color='blue';
-		 };
+    if ($dem>$rep){
+		  $color='blue';
+		};
 		 
-	if ($rep>$dem){
-		my $color='red';
+    if ($rep>$dem){
+      $color='red';
 		};
 		
-		print start_form(-id=>'individualData'),
+    print start_form(-id=>'individualData'),
         hidden(-id=>'DemI',-default=>[$dem]),
         hidden(-id=>'RepI',-default=>[$rep]),
         hidden(-id=>'colorI',-default=>[$color]),
           end_form, hr;
+    print "<h1 style=\"color:".$color."\">Individuals financial data:Democratic: \$ ".$dem.". Rebuplican: \$ ".$rep."<br></h1>";
 
 
 
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby individuals</h2>$str";
-      } else {
-	print $str;
-      }
-    }
+    
   }
   if ($what{opinions}) {
     my ($str,$error) = Opinions($latne,$longne,$latsw,$longsw,$cycle,$format);
+    if (!$error) {
+      if ($format eq "table") { 
+        print "<h2>Nearby opinions</h2>$str";
+      } else {
+        print $str;
+      }
+    }
     my @rows;
     my $count;
     my $stopper;
@@ -602,12 +633,12 @@ if ($dem>$rep)
 		eval {
 			@rows = ExecSQL($dbuser, $dbpasswd, "select count(color), avg(color), stddev(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?","COL",$latsw,$latne,$longsw,$longne);
     };
-    $count=$rows[0];
+    $count=$rows[0][0];
     $stopper++;
     }while (($count<5)&&($stopper<20));
     
-    my $avg=$rows[1];
-    my $std=$rows[2];
+    my $avg=$rows[0][1];
+    my $std=$rows[0][2];
 
     if($rows[0]>0)
         {
@@ -624,14 +655,10 @@ if ($dem>$rep)
         hidden(-id=>'std',-default=>[$std]),
         hidden(-id=>'avg',-default=>[$avg]),
          end_form, hr;
+    print "<h1 style=\"color:".$color."\">Opinions data:Average: \$ ".$avg." Standard Deviation: \$ ".$std."<br></h1>";
+
     
-    if (!$error) {
-      if ($format eq "table") { 
-	print "<h2>Nearby opinions</h2>$str";
-      } else {
-	print $str;
-      }
-    }
+
   }
 }
 
@@ -690,7 +717,6 @@ if ($action eq "register"){
   }
 
 if ($action eq "invite-user") { 
-  my @permissionList = ExecSQL($dbuser, $dbpasswd, "select action from rwb_permissions where name=?","COL",$user);
 
   my @permissionList = ExecSQL($dbuser, $dbpasswd, "select action from rwb_permissions where name=?","COL",$user);
 
