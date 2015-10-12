@@ -33,6 +33,7 @@ $(document).ready(function() {
 // Global variables
 var map, usermark, markers = [],
 
+
 // UpdateMapById draws markers of a given category (id)
 // onto the map using the data for that id stashed within 
 // the document.
@@ -121,19 +122,15 @@ UpdateMap = function() {
 		color.css("background-color", "red");
 	}
 
-	//Part 3 coloring
-   $('#summary-committee').css('background-color',$('#committee_contribution').attr('color'));
-      // $('#summary-individual').css('background-color',$('#Individual_contribution').attr('color'));
-   // $('#summary-opinion').css('background-color',$('#selected_opinions').attr('color'));
-   // $('#summary-committee').html($('#committee_contribution').html());
-      // $('#summary-individual').html($('#Individual_contribution').html());
-   // $('#summary-opinion').html($('#selected_opinions').html());
-   
-   // $('#vote').html($('#winner').html());
-   // $('#summary-data-committee_1').css('background-color',$('#committee_data_contribution_1').attr('color'));
-   // $('#summary-data-committee_1').html($('#committee_data_contribution_1').html());
-   // $('#summary-data-committee_2').css('background-color',$('#committee_data_contribution_2').attr('color'));
-   // $('#summary-data-committee_2').html($('#committee_data_contribution_2').html());
+	$('#summary-committee').css('background-color',$('#committee-contributions').attr('color'));
+	$('#summary-candidate').css('background-color',$('#candidate-contributions').attr('color'));
+	$('#summary-individual').css('background-color',$('#individual-contributions').attr('color'));
+	$('#summary-opinion').css('background-color',$('#opinion-contributions').attr('color'));
+	
+	$('#summary-committee').html($('#committee-contributions').html());
+	$('#summary-candidate').html($('#candidate-contributions').html());
+	$('#summary-individual').html($('#individual-contributions').html());
+	$('#summary-opinion').html($('#opinion-contributions').html());
 }
 
 //
@@ -150,6 +147,55 @@ NewData = function(data) {
 	UpdateMap();
 },
 
+summary = function(){
+		// Check which checkbox is checked.
+	var elLength = document.checkboxForm.elements.length;
+	var checkedText="";
+    for (i=0; i<elLength; i++)
+    {
+        var type = checkboxForm.elements[i].type;
+        if (type=="checkbox" && checkboxForm.elements[i].checked){
+            //alert("Form element in position " + i + " is of type checkbox and is checked.");
+            if (checkedText!=""){
+            	checkedText = checkedText.concat(",");
+            }
+            switch(i){
+            	case 0:
+            		checkedText = checkedText.concat("committees");
+            		break;
+            	case 1:
+            		checkedText = checkedText.concat("candidates");
+            		break;
+            	case 2:
+            		checkedText = checkedText.concat("individuals");
+            		
+            }
+        }
+    }
+
+     if checkedText="committees"{
+		color.style.backgroundColor=document.getElementByID("colorC").value;
+		color.innerHTML="Ready<br>";
+		color.innerHTML+="Democratic: $" + document.getElementById("DemC").value + "<br>";
+		color.innerHTML+="Rebuplican: $" + document.getElementById("RepC").value;
+		 } 
+         
+
+     
+     if checkedText="individuals"{
+		 color.style.backgroundColor=document.getElementByID("colorI").value;         
+     color.innerHTML="Ready<br>";
+     color.innerHTML+="Democratic: $" + document.getElementById("DemI").value + "<br>";
+     color.innerHTML+="Rebuplican: $" + document.getElementById("RepI").value;
+    }
+    
+      if checkedText="opinions"{
+		 color.style.backgroundColor=document.getElementByID("colorO").value;         
+     color.innerHTML="Ready<br>";
+     color.innerHTML+="Average: " + document.getElementById("avg").value "<br>";
+     color.innerHTML+="Standard Deviation: " + document.getElementById("std").value;
+    }
+    }
 //
 // The Google Map calls us back at ViewShift when some aspect
 // of the map changes (for example its bounds, zoom, etc)
@@ -235,7 +281,9 @@ ViewShift = function() {
 		ClearMarkers();
 		return;
 	}
-},
+	
+	summary();
+}
 
 
 //

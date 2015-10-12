@@ -375,14 +375,14 @@ if ($action eq "base") {
   print "<form name=\"checkboxForm\" style=\"font-size: 150%\" action = \"#\">";
   print "<input type=\"checkbox\" name=\"committeesCheckbox\" value=\"Committees\" onClick=\"ViewShift()\">Committees<br>";
   print "<input type=\"checkbox\" name=\"candidatesCheckbox\" value=\"Candidates\" onClick=\"ViewShift()\">Candidates<br>";
-  print "<input type=\"checkbox\" name=\"individualsCheckbox\" value=\"Individuals\" onClick=\"ViewShift()\">Individuals";
+  print "<input type=\"checkbox\" name=\"individualsCheckbox\" value=\"Individuals\" onClick=\"ViewShift()\">Individuals<br>"; 
+  print "<input type=\"checkbox\" name=\"opinionsCheckbox\" value=\"Opinions\" onClick=\"ViewShift()\">Opinions";
   print "</form>";
   print "<p id=\"debugText\">Hello World!</p>";
   
   # ***************************************************TEST**************************************************
 
- 
-  
+
 
    
  
@@ -480,61 +480,48 @@ if ($action eq "near") {
   	my @rep;
   	my @dem;
   	my $count;
-  	
-  	eval{
-    @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.committee_master natural join cs339.comm_to_cand natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-}; 
-eval{
-    @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-}; 
-eval { 
-   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-};
+  	my $stopper;
+  	my $color='white';
 
-  eval { 
-   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-};  
-
-
-
-$count = @{$rows_time_rep_cand[0]}[0] + @{$rows_time_rep_comm[0]}[0] + @{$rows_time_dem_comm[0]}[0]+@{$rows_time_dem_cand[0]}[0];
-
-
-if ($count<5){
-	 $latne+=0.1;
+          
+do{
+	$latne+=0.1;
     $latsw-=0.1;
     $longne+=0.1;
     $longsw-=0.1;
    	eval{
     @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.committee_master natural join cs339.comm_to_cand natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
 }; 
-   eval{
+	eval{
     @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
 }; 
-eval { 
-   @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+	eval { 
+	@rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
 };
- eval { 
-   @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt), SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-};  
-my $dem=@{$rows_time_dem_cand[0]}[0] +@{$rows_time_dem_comm[0]}[0];
-my $rep=@{$rows_time_rep_comm[0]}[0]+ @{$rows_time_rep_cand[0]}[0];
+	eval { 
+	@rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle =($cycle) and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+};
+	$count = $rows_time_rep_cand[0] + $rows_time_rep_comm[0]+ $rows_time_dem_comm[0]+$rows_time_dem_cand[0];
+	$stopper++;
+	}while(($count<5)&&($stopper<20));
+
+	my $dem=$rows_time_dem_cand[1] +$rows_time_dem_comm[1];
+	my $rep=$rows_time_rep_comm[1]+ $rows_time_rep_cand[1];
 
 if ($dem>$rep)
   {
-    my $color='blue';
-    my $id='result';
-    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
-    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
-};
-  if ($rep>$dem)
+    $color='blue';
+}
+ if ($rep>$dem)
   {
-    my $color='red';
-    my $id='result';
-    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
-    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
-}  
-}; 
+    $color='red';
+} 
+     print start_form(-id=>'myCommitteeData'),
+        hidden(-id=>'DemC',-default=>[$dem]),
+        hidden(-id=>'RepC',-default=>[$rep]),
+        hidden(-id=>'colorC',-default=>[$color]),
+          end_form, hr;
+ 
 
     if (!$error) {
       if ($format eq "table") { 
@@ -562,41 +549,39 @@ if ($dem>$rep)
     my @dem;
     my @rep;
     my $count;
-eval{
-    	@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-    };
-    eval { 
-    	@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-    };
-    
-     $count=@{$rows_time_rep[0]}[0] + @{$rows_time_dem[0]}[0];
-     while ($count<5)
-     {
-		 eval{
-    	@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-    };
-    eval { 
-    	@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
-    };
-		 };
+    my $stopper;
+    my $color='white';
+	
+
+    do{
+		eval{
+			@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+			 };
+		eval {
+			@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and cycle=($cycle)and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+			};
+		$count=$rows_time_rep[0] + $rows_time_dem[0];
+		$stopper++;
+		} while (($count<5)&&($stopper<20));
      
-     my $dem=@{$rows_time_dem[0]}[1];
-     my $rep=@{$rows_time_rep[0]}[1];
-     if ($dem>$rep)
-  {
-    my $color='blue';
-    my $id='result_ind';
-    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
-    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
-    };
-    
-     if ($rep>$dem)
-  {
-    my $color='red';
-    my $id='result_ind';
-    my $text = "<span>Republican Contributions: $rep\$ </span><span>Democrat Contributions: $dem\$</span>";
-    print "<div id='$id' color='$color' style='display:none;'>$text</div>";
-}  
+     my $dem=$rows_time_dem[1];
+     my $rep=$rows_time_rep[1];
+     
+     if ($dem>$rep){
+		 $color='blue';
+		 };
+		 
+	if ($rep>$dem){
+		my $color='red';
+		};
+		
+		print start_form(-id=>'individualData'),
+        hidden(-id=>'DemI',-default=>[$dem]),
+        hidden(-id=>'RepI',-default=>[$rep]),
+        hidden(-id=>'colorI',-default=>[$color]),
+          end_form, hr;
+
+
 
     if (!$error) {
       if ($format eq "table") { 
@@ -609,37 +594,36 @@ eval{
   if ($what{opinions}) {
     my ($str,$error) = Opinions($latne,$longne,$latsw,$longsw,$cycle,$format);
     my @rows;
-
-    eval {
-      @rows = ExecSQL($dbuser, $dbpasswd, "select avg(color), stddev(color), count(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?","COL",$latsw,$latne,$longsw,$longne);
-    };
+    my $count;
+    my $stopper;
+    my $color='white';
     
-    my $coloravg=$rows[0];
-    my $std=$rows[1];
-    my $count=$rows[2];
-    
-    while ($count<5)
-    {
-		  eval {
-      @rows = ExecSQL($dbuser, $dbpasswd, "select avg(color), stddev(color), count(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?","COL",$latsw,$latne,$longsw,$longne);
+    do{
+		eval {
+			@rows = ExecSQL($dbuser, $dbpasswd, "select count(color), avg(color), stddev(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?","COL",$latsw,$latne,$longsw,$longne);
     };
-    }
+    $count=$rows[0];
+    $stopper++;
+    }while (($count<5)&&($stopper<20));
+    
+    my $avg=$rows[1];
+    my $std=$rows[2];
 
     if($rows[0]>0)
         {
         my $color='red';
-        my $id='selected_opinions';
-        my $text = "<span>Average is: $coloravg\$ . Std is $std\$</span>";
-        print "<div id='$id' color='$color' style='display:none;'>$text</div>";
         }
         
-        if($rows[0]<0)
+    if($rows[0]<0)
         {
         my $color='blue';
-        my $id='selected_opinions';
-        my $text = "<span>Average is: $coloravg\$ . Std is $std\$</span>";
-        print "<div id='$id' color='$color' style='display:none;'>$text</div>";
          }
+         
+       print start_form(-id=>'opinionData'),
+        hidden(-id=>'colorO',-default=>[$color]),
+        hidden(-id=>'std',-default=>[$std]),
+        hidden(-id=>'avg',-default=>[$avg]),
+         end_form, hr;
     
     if (!$error) {
       if ($format eq "table") { 
@@ -651,9 +635,65 @@ eval{
   }
 }
 
+#
+# REGISTER
+#
+# When new user clicked the link provided by inviter to register
+#
+if ($action eq "register"){
+  my $inviter = param("inviter");   
+  my $email = param("email");	# email is the unique key in invitation link, link expires if email has been registered
+  print h2("email: $email");
+  my @permissionList = param("permission");
+  foreach (@permissionList){
+    print h3("permission: $_");
+  }
+
+  if (EmailRegistered($email)){
+    print h2("This email has already been registered. Link expired.");
+  } else{ 
+    if (!$run) { 
+      print start_form(-name=>'AddUser'),
+        h2("Welcome to RWB! Please register"),
+        h3("You name and password entered below will be associated with the email address you received this link with"),
+	  "Name: ", textfield(-name=>'name'),
+	    p,
+		  "Password: ", textfield(-name=>'password'),
+		    p,
+		      hidden(-name=>'run',-default=>['1']),
+			hidden(-name=>'act',-default=>['login']),
+		        hidden(-name=>'email',-default=>$email),
+			  submit,
+			    end_form,
+			      hr;
+    } else {
+      my $name=param('name');
+      my $password=param('password');
+      my $email = param('email');
+      my $error;
+      $error=UserAdd($name,$password,$email,$user);
+      if ($error) { 
+	print "Can't add user because: $error";
+      } else {
+        foreach (@permissionList){
+	  my $error=GiveUserPerm($name,$_);
+          if ($error) { 
+            print "Can't add permission to user because: $error";
+	  } else{
+            print "permission given: $_\n";
+          }
+	}
+	print "You have registered. Please <a href=\"rwb.pl?act=login\">log in</a>";
+      }
+    }
+   }
+  }
 
 if ($action eq "invite-user") { 
   # print h2("Invite User Functionality Is Unimplemented");
+
+  my @permissionList = ExecSQL($dbuser, $dbpasswd, "select action from rwb_permissions where name=?","COL",$user);
+
 
   if (!UserCan($user,"invite-users")) { 
     print h2('You do not have the required permissions to invite users.');
@@ -663,28 +703,67 @@ if ($action eq "invite-user") {
   h2('Invite User'),
     "Email: ", textfield(-name=>'email'),
         p,
-          hidden(-name=>'run',-default=>['1']),
-      hidden(-name=>'invite',-default=>['invite-user']),
+    h3('Please select the permissions for your invitee');
+    foreach (@permissionList) {
+      print checkbox(-name=>$_),p;
+    }
+      print  hidden(-name=>'run',-default=>['1']),
+      hidden(-name=>'act',-default=>['invite-user']),
         submit,
           end_form,
             hr;
     } else {
       my $email=param('email');
-      h2('yay')
-  #     my $error;
-  #     $error=UserAdd($name,$password,$email,$user);
-  #     if ($error) { 
-  # print "Can't add user because: $error";
-  #     } else {
-  # print "Added user $name $email as referred by $user\n";
-  #     }
+      my $link="http://murphy.wot.eecs.northwestern.edu/~yfo776/rwb/rwb.pl?act=register&inviter=$user&email=$email";
+      foreach (@permissionList){
+        if (param($_) eq 'on') {
+          $link="$link&permission=$_";
+        }
+      }
+      $link = substr $link,0,-1;
+      print h3("An invitational email has been sent to $email");
+      open(MAIL, "| mail -s \"rwb test\" $email");
+      print MAIL "You have been invited by $user to register for RWB. Please use the following link to register: $link";
+      close(MAIL);
     }
   }
   print "<p><a href=\"rwb.pl?act=base&run=1\">Return</a></p>";
 }
 
 if ($action eq "give-opinion-data") { 
-  print h2("Giving Location Opinion Data Is Unimplemented");
+  if (!UserCan($user,"give-opinion-data")) { 
+    print h2('You do not have the required permissions to give opinion.');
+  } else {
+    if (!$run) { 
+      print "<script>";
+      print "window.onload = navigator.geolocation.getCurrentPosition(function(location){var long = document.getElementById('longitude');long.value=location.coords.longitude;var lat = document.getElementById('latitude');lat.value=location.coords.latitude;})";
+      print "</script>";
+      print
+        print start_form(-name=>'give-opinion'),
+        h2('Give Your Opinion'),
+          "Color: a number from -1 to 1 ", textfield(-name=>'color'),p,
+          hidden(-name=>'latitude',-id=>'latitude'),p,
+	  hidden(-name=>'longitude',-id=>'longitude'),p,
+                      hidden(-name=>'run',-default=>['1']),
+                        hidden(-name=>'act',-default=>['add-user']),
+                          submit,
+                            end_form,
+                              hr;
+    } else {  
+      my $latitude = param("latitude");
+      my $longitude = param("longitude"); 
+      my $color=param('color');
+      my $error;
+      $error=GiveOpinion($user,$color,$latitude,$longitude);
+      if ($error) { 
+        print "Can't give opinion because: $error";
+      } else {
+        print "Thanks for your opinion!\n";
+      }
+    }
+  }
+  print "<p><a href=\"rwb.pl?act=base&run=1\">Return</a></p>";
+
 }
 
 if ($action eq "give-cs-ind-data") { 
@@ -703,7 +782,7 @@ if ($action eq "add-user") {
   if (!UserCan($user,"add-users") && !UserCan($user,"manage-users")) { 
     print h2('You do not have the required permissions to add users.');
   } else {
-    if (!$run) { 
+    if (!$run) {
       print start_form(-name=>'AddUser'),
 	h2('Add User'),
 	  "Name: ", textfield(-name=>'name'),
@@ -921,6 +1000,7 @@ sub Committees {
   eval { 
     # Changed where cycle=? and latitude>? to where ".$cycle." and latitude>? because now we have to select multiple cycles. ? can only be behind an operator(like =, !=,<>)
     @rows = ExecSQL($dbuser, $dbpasswd, "select latitude, longitude, cmte_nm, cmte_pty_affiliation, cmte_st1, cmte_st2, cmte_city, cmte_st, cmte_zip from cs339.committee_master natural join cs339.cmte_id_to_geo where ".$cycle." and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+
   };
   
 
@@ -1185,7 +1265,31 @@ sub UserCan {
 }
 
 
+#
+# Check if the given email address already exists in the rwb_user table
+#
+sub EmailRegistered{
+  my ($email) = @_;
+  my @col;
+  eval {@col= ExecSQL($dbuser,$dbpasswd, "select count(*) from rwb_users where email=?","COL",$email);};
+  if ($@){
+    return 0;
+  } else {
+    return $col[0]>0;
+  }
+} 
 
+
+#
+## Insert opinion data into rwb_opinions
+##
+## GiveOpinion($submitter, $color, $latitude, $longitude)
+##
+sub GiveOpinion{
+  my ($submitter, $color, $latitude, $longitude) = @_;
+  eval {ExecSQL($dbuser, $dbpasswd, "insert into rwb_opinions (submitter,color,latitude,longitude) values (?,?,?,?)",undef,$submitter,$color,$latitude,$longitude);};
+  return $@;
+} 
 
 
 #
@@ -1271,14 +1375,6 @@ sub MakeRaw {
   #
   if ($type eq "ROW") { 
     #
-    # map {code} @list means "apply this code to every member of the list
-    # and return the modified list.  $_ is the current list member
-    #
-    $out.=join("\t",map { defined($_) ? $_ : "(null)" } @list);
-    $out.="\n";
-  } elsif ($type eq "COL") { 
-    #
-    # ditto for a single column
     #
     $out.=join("\n",map { defined($_) ? $_ : "(null)" } @list);
     $out.="\n";
@@ -1294,8 +1390,6 @@ sub MakeRaw {
   $out.="</pre>\n";
   return $out;
 }
-
-#
 # @list=ExecSQL($user, $password, $querystring, $type, @fill);
 #
 # Executes a SQL statement.  If $type is "ROW", returns first row in list
