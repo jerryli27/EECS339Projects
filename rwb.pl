@@ -493,31 +493,34 @@ if ($action eq "near") {
   	my @rows_time_rep_comm;
   	my @rows_time_dem_cand;
   	my @rows_time_dem_comm;
+    my $latne_rep=$latne;
+    my $latsw_rep=$latsw;
+    my $longne_rep=$longne;
+    my $longsw_rep=$longsw;
 
   	my $count;
-  	my $stopper;
+  	my $stopper=0;
   	my $color='white';
-
           
     do{
-    	$latne+=0.1;
-      $latsw-=0.1;
-      $longne+=0.1;
-      $longsw-=0.1;
      	eval{
-        @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.committee_master natural join cs339.comm_to_cand natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+        @rows_time_rep_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.committee_master natural join cs339.comm_to_cand natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_rep,$latne_rep,$longsw_rep,$longne_rep);
       }; 
       eval{
-        @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+        @rows_time_rep_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','Rep','rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_rep,$latne_rep,$longsw_rep,$longne_rep);
       }; 
       eval { 
-        @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+        @rows_time_dem_cand = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_CAND natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_rep,$latne_rep,$longsw_rep,$longne_rep);
       };
       eval { 
-        @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+        @rows_time_dem_comm = ExecSQL($dbuser, $dbpasswd, "select count (transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.COMMITTEE_MASTER natural join CS339.COMM_TO_COMM natural join CS339.CMTE_ID_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_rep,$latne_rep,$longsw_rep,$longne_rep);
       };
     	$count = $rows_time_rep_cand[0][0] + $rows_time_rep_comm[0][0]+ $rows_time_dem_comm[0][0]+$rows_time_dem_cand[0][0];
     	$stopper++;
+      $latne_rep+=0.1*$stopper;
+      $latsw_rep-=0.1*$stopper;
+      $longne_rep+=0.1*$stopper;
+      $longsw_rep-=0.1*$stopper;
     }while(($count<5)&&($stopper<20));
 
   	my $dem=0;
@@ -543,11 +546,14 @@ if ($action eq "near") {
       {
         $color='red';
       } 
-     print start_form(-id=>'myCommitteeData'),
-        hidden(-id=>'DemC',-default=>[$dem]),
-        hidden(-id=>'RepC',-default=>[$rep]),
-        hidden(-id=>'colorC',-default=>[$color]),
-          end_form, hr;
+     # print start_form(-id=>'myCommitteeData'),
+     #    hidden(-id=>'DemC',-default=>[$dem]),
+     #    hidden(-id=>'RepC',-default=>[$rep]),
+     #    hidden(-id=>'colorC',-default=>[$color]),
+     #      end_form, hr;
+    print "<input type=\"hidden\" name=\"\" value=\"".$dem."\" id=\"DemC\">";
+    print "<input type=\"hidden\" name=\"\" value=\"".$rep."\" id=\"RepC\">";
+    print "<input type=\"hidden\" name=\"\" value=\"".$color."\" id=\"colorC\">";
     print "<h1 style=\"color:".$color."\">Commities financial data:Democratic: \$ ".$dem.". Rebuplican: \$ ".$rep."<br></h1>";
   }
   if ($what{candidates}) {
@@ -574,23 +580,27 @@ if ($action eq "near") {
     my @dem;
     my @rep;
     my $count;
-    my $stopper;
+    my $stopper=0;
     my $color='white';
+    my $latne_ind=$latne;
+    my $latsw_ind=$latsw;
+    my $longne_ind=$longne;
+    my $longsw_ind=$longsw;
 	
 
     do{
-      $latne+=0.1;
-      $latsw-=0.1;
-      $longne+=0.1;
-      $longsw-=0.1;
   		eval{
-  			@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+  			@rows_time_dem = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('dem','Dem','DEM') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_ind,$latne_ind,$longsw_ind,$longne_ind);
   		};
   		eval {
-  			@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw,$latne,$longsw,$longne);
+  			@rows_time_rep = ExecSQL($dbuser, $dbpasswd, "select count(transaction_amnt),SUM(TRANSACTION_AMNT) from CS339.INDIVIDUAL natural join CS339.COMMITTEE_MASTER natural join CS339.IND_TO_GEO where CMTE_PTY_AFFILIATION in ('REP','rep','Rep') and $cycle and latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_ind,$latne_ind,$longsw_ind,$longne_ind);
   		};
   		$count=$rows_time_rep[0][0] + $rows_time_dem[0][0];
   		$stopper++;
+      $latne_ind+=0.1*$stopper;
+      $latsw_ind-=0.1*$stopper;
+      $longne_ind+=0.1*$stopper;
+      $longsw_ind-=0.1*$stopper;
 		} while (($count<5)&&($stopper<20));
      
     my $dem=$rows_time_dem[0][1];
@@ -604,11 +614,14 @@ if ($action eq "near") {
       $color='red';
 		};
 		
-    print start_form(-id=>'individualData'),
-        hidden(-id=>'DemI',-default=>[$dem]),
-        hidden(-id=>'RepI',-default=>[$rep]),
-        hidden(-id=>'colorI',-default=>[$color]),
-          end_form, hr;
+    # print start_form(-id=>'individualData'),
+    #     hidden(-id=>'DemI',-default=>[$dem]),
+    #     hidden(-id=>'RepI',-default=>[$rep]),
+    #     hidden(-id=>'colorI',-default=>[$color]),
+    #       end_form, hr;
+    print "<input type=\"hidden\" name=\"\" value=\"".$dem."\" id=\"DemI\">";
+    print "<input type=\"hidden\" name=\"\" value=\"".$rep."\" id=\"RepI\">";
+    print "<input type=\"hidden\" name=\"\" value=\"".$color."\" id=\"colorI\">";
     print "<h1 style=\"color:".$color."\">Individuals financial data:Democratic: \$ ".$dem.". Rebuplican: \$ ".$rep."<br></h1>";
 
 
@@ -626,36 +639,42 @@ if ($action eq "near") {
     }
     my @rows;
     my $count;
-    my $stopper;
+    my $stopper=0;
     my $color='white';
+    my $latne_opi=$latne;
+    my $latsw_opi=$latsw;
+    my $longne_opi=$longne;
+    my $longsw_opi=$longsw;
+  
     
     do{
-		eval {
-			@rows = ExecSQL($dbuser, $dbpasswd, "select count(color), avg(color), stddev(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?","COL",$latsw,$latne,$longsw,$longne);
-    };
-    $count=$rows[0][0];
-    $stopper++;
-    }while (($count<5)&&($stopper<20));
+  		eval {
+  			@rows = ExecSQL($dbuser, $dbpasswd, "select count(color), avg(color), stddev(color) from rwb_opinions where latitude>? and latitude<? and longitude>? and longitude<?",undef,$latsw_opi,$latne_opi,$longsw_opi,$longne_opi);
+      };
+      $count=$rows[0][0];
+      $stopper++;
+      $latne_opi+=0.1*$stopper;
+      $latsw_opi-=0.1*$stopper;
+      $longne_opi+=0.1*$stopper;
+      $longsw_opi-=0.1*$stopper;
+    }while (($count<1)&&($stopper<20));
     
     my $avg=$rows[0][1];
     my $std=$rows[0][2];
 
-    if($rows[0]>0)
+    if($avg>0)
         {
-        my $color='red';
+        $color='red';
         }
         
-    if($rows[0]<0)
+    if($avg<0)
         {
-        my $color='blue';
+        $color='blue';
          }
-         
-       print start_form(-id=>'opinionData'),
-        hidden(-id=>'colorO',-default=>[$color]),
-        hidden(-id=>'std',-default=>[$std]),
-        hidden(-id=>'avg',-default=>[$avg]),
-         end_form, hr;
-    print "<h1 style=\"color:".$color."\">Opinions data:Average: \$ ".$avg." Standard Deviation: \$ ".$std."<br></h1>";
+    print "<input type=\"hidden\" name=\"\" value=\"".$avg."\" id=\"avg\">";
+    print "<input type=\"hidden\" name=\"\" value=\"".$std."\" id=\"std\">";
+    print "<input type=\"hidden\" name=\"\" value=\"".$color."\" id=\"colorO\">";
+    print "<h1 style=\"color:".$color."\">Opinions data:Average: ".$avg." Standard Deviation: ".$std."<br></h1>";
 
     
 
